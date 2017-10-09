@@ -1,4 +1,4 @@
-class EngieSwitch(ChimeraObject, Switch):
+class EnergenieSwitch(ChimeraObject, Switch):
     __config__ = {"device": "200.131.64.143",
                   "output": 6,  # Which output to switch on/off
                   "switch_timeout": None,  # Maximum number of seconds to wait for state change
