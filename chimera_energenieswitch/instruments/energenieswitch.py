@@ -1,8 +1,8 @@
 class EnergenieSwitch(ChimeraObject, Switch):
-    __config__ = {"device": "200.131.64.143",
-                  "output": 6,  # Which output to switch on/off
+    __config__ = {"device": "127.0.0.1",
+                  "output": 1,  # Which output to switch on/off
                   "switch_timeout": None,  # Maximum number of seconds to wait for state change
-                  "password": "Chiemra065"
+                  "password": ""
                   }
 
     def __init__(self):
