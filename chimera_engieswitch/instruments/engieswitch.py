@@ -1,18 +1,46 @@
-# This is an example of an simple instrument.
-
-from chimera.core.chimeraobject import ChimeraObject
-
-
-class InstrumentExample(ChimeraObject):
-    __config__ = {"param1": "a string parameter"}
+class EngieSwitch(ChimeraObject, Switch):
+    __config__ = {"device": "200.131.64.143",
+                  "output": 6,  # Which output to switch on/off
+                  "switch_timeout": None,  # Maximum number of seconds to wait for state change
+                  "password": "Chiemra065"
+                  }
 
     def __init__(self):
-        ChimeraObject.__init__(self)
+        super(EngieSwitch, self).__init__()
+        self.states = None
 
-    def __start__(self):
-        self.doSomething("test argument")
+    def _getstate(self):
+        self.states = None
+        r = requests.post('http://%s/login.html' % self["device"], data=dict(pw=self["password"]))
+        self.states = ast.literal_eval(r.split("sockstates = ")[1].split(";")[0])
+        return True
 
-    def doSomething(self, arg):
-        self.log.warning("Hi, I'm doing something.")
-        self.log.warning("My arg=%s" % arg)
-        self.log.warning("My param1=%s" % self["param1"])
+    def _setstate(self, state):
+        self.states = None
+        r = requests.post('http://%s/' % self["device"], data={"pw": self["password"],
+                                                                "cte%i" % self["output"]: "%i" % state})
+        self.states = ast.literal_eval(r.split("sockstates = ")[1].split(";")[0])
+        return bool(self.states[self["output"] - 1])
+
+    def switchOn(self):
+        if not self.isSwitchedOn():
+            if self._setstate(True):
+                self.switchedOn()
+                return True
+            else:
+                return False
+
+    def switchOff(self):
+        if self.isSwitchedOn():
+            if self._setstate(False):
+                self.switchedOff()
+                return True
+            else:
+                return False
+
+    def isSwitchedOn(self):
+        self._getstate()
+        if self.states is not None:
+            return bool(self.states[self["output"] - 1])
+        else:
+            raise  # FIXME
