@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 setup(
-    name='chimera_template',
+    name='chimera_energenie',
     version='0.0.1',
     packages=['chimera_energenieswitch', 'chimera_energenieswitch.instruments'],
     scripts=[],
