@@ -1,3 +1,9 @@
+import requests
+import ast
+from chimera.core.chimeraobject import ChimeraObject
+from chimera.interfaces.switch import Switch
+
+
 class EnergenieSwitch(ChimeraObject, Switch):
     __config__ = {"device": "127.0.0.1",
                   "output": 1,  # Which output to switch on/off
@@ -12,15 +18,15 @@ class EnergenieSwitch(ChimeraObject, Switch):
     def _getstate(self):
         self.states = None
         r = requests.post('http://%s/login.html' % self["device"], data=dict(pw=self["password"]))
-        self.states = ast.literal_eval(r.split("sockstates = ")[1].split(";")[0])
+        self.states = ast.literal_eval(r.text.split("sockstates = ")[1].split(";")[0])
         return True
 
     def _setstate(self, state):
         self.states = None
         r = requests.post('http://%s/' % self["device"], data={"pw": self["password"],
                                                                 "cte%i" % self["output"]: "%i" % state})
-        self.states = ast.literal_eval(r.split("sockstates = ")[1].split(";")[0])
-        return bool(self.states[self["output"] - 1])
+        self.states = ast.literal_eval(r.text.split("sockstates = ")[1].split(";")[0])
+        return bool(self.states[self["output"] - 1]) == state
 
     def switchOn(self):
         if not self.isSwitchedOn():
@@ -29,6 +35,8 @@ class EnergenieSwitch(ChimeraObject, Switch):
                 return True
             else:
                 return False
+        else:
+            return True
 
     def switchOff(self):
         if self.isSwitchedOn():
@@ -37,10 +45,10 @@ class EnergenieSwitch(ChimeraObject, Switch):
                 return True
             else:
                 return False
+        else:
+            return True
 
     def isSwitchedOn(self):
         self._getstate()
         if self.states is not None:
             return bool(self.states[self["output"] - 1])
-        else:
-            raise  # FIXME
